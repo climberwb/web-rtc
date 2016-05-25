@@ -1,10 +1,7 @@
 var WebSocketServer = require('ws').Server;
 
 var http = require('http');
-var express = require('express');
-var socket_io = require('socket.io');
-
-var app = express();
+var path = require('path')
 var http = require('http');
 var express = require('express');
 var socket_io = require('socket.io');
@@ -25,7 +22,11 @@ var io = socket_io(server);
 
 // app.use(express.static('public'));
 app.use(express.static('public'));
-// app.use('/', drawingRoutes);
+app.use('/', function(req,res){
+    res.sendFile(path.join(__dirname+'/public/video.html')); 
+    //path.join(__dirname+'/public/video.html'))
+});
+
 app.use('*', function(req, res) {
     res.status(404).json({ message: 'Not Found' });
 });
