@@ -18,12 +18,12 @@ window.RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSess
 
 function gotMessageFromServer(message) {
     if(!peerConnection) start(false);
-
-    var signal = JSON.parse(message.data);
+        console.log(message);
+        var signal = JSON.parse(message);
     if(signal.sdp) {
-        peerConnection.setRemoteDescription(new RTCSessionDescription(signal.sdp), function() {
+        peerConnection.setRemoteDescription(new RTCSessionDescription(signal.sdp), function(err) {
             peerConnection.createAnswer(gotDescription, createAnswerError);
-        });
+        },function(){console.log("the error "+err)});
     } else if(signal.ice) {
         peerConnection.addIceCandidate(new RTCIceCandidate(signal.ice));
     }
@@ -54,13 +54,20 @@ function start(isCaller) {
 function gotDescription(description) {
     console.log('got description');
     peerConnection.setLocalDescription(description, function () {
-        serverConnection.send(JSON.stringify({'sdp': description}));
+        serverConnection.emit('message',JSON.stringify({'sdp': description}));
     }, function() {console.log('set description error')});
+}
+
+function createAnswerError(error) {
+    console.log('error '+error);
+    // peerConnection.setLocalDescription(description, function () {
+    //     serverConnection.emit('message',JSON.stringify({'sdp': description}));
+    // }, function() {console.log('set description error')});
 }
 
 function gotIceCandidate(event) {
     if(event.candidate != null) {
-        serverConnection.send(JSON.stringify({'ice': event.candidate}));
+        serverConnection.emit('message',JSON.stringify({'ice': event.candidate}));
     }
 }
 
@@ -79,7 +86,7 @@ function pageReady() {
     remoteVideo = document.getElementById('remoteVideo');
     serverConnection = io();
     // serverConnection = new WebSocket('ws://127.0.0.1:3434');
-    serverConnection.onmessage = gotMessageFromServer;
+    serverConnection.on('message', gotMessageFromServer);
 
     var constraints = {
         video: true,

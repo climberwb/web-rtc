@@ -36,9 +36,12 @@ app.use('*', function(req, res) {
 
 io.on('connection', function (socket) {
     console.log('Client connected');
-
-    socket.on('draw', function(point,id) {
-        console.log('Received data point:', point,id);
+    // socket.on('broadcast',function(){
+        
+    // })
+    socket.on('message', function(message) {
+        console.log('received: %s', message);
+        socket.broadcast.emit('message', message );
         // drawingServices.update(id,point,function(){
         //      console.log('inside callback server'+id);
         //      socket.broadcast.emit('draw',point,id);
